@@ -1,0 +1,9 @@
+Package: com.legacyfixes.allinone
+Name: LegacyFixes All-in-One
+Version: __VERSION__
+Architecture: iphoneos-arm
+Description: Installs every LegacyFixes app package at once. Useful for setting up a legacy device quickly; remove this metapackage if you only want specific fixes.
+Maintainer: LegacyFixes
+Author: LegacyFixes
+Section: Tweaks
+Depends: com.legacyfixes.youtube, com.legacyfixes.youtubekids, com.legacyfixes.facebook, com.legacyfixes.messenger, firmware (>= 6.0), firmware (<< 10.0)

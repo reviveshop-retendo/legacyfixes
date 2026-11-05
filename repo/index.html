@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LegacyFixes — app fixes for iOS 6–9</title>
+<meta name="description" content="A Cydia/Sileo repository with compatibility fixes for YouTube, YouTube Kids, Facebook and Messenger on legacy 32-bit iOS.">
+<link rel="icon" href="CydiaIcon.png">
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #12151d;
+    --panel-2: #171b25;
+    --line: #262b38;
+    --text: #e8ebf2;
+    --muted: #9aa3b5;
+    --accent: #6ea8fe;
+    --accent-2: #8b5cf6;
+    --good: #45d483;
+    --warn: #f2b84b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background:
+      radial-gradient(1200px 700px at 15% -10%, rgba(110,168,254,.16), transparent 60%),
+      radial-gradient(900px 600px at 100% 0%, rgba(139,92,246,.14), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  header { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; }
+  .logo {
+    width: 56px; height: 56px; border-radius: 16px; flex: 0 0 auto;
+    display: grid; place-items: center; font-size: 28px;
+    background: linear-gradient(145deg, var(--accent), var(--accent-2));
+    box-shadow: 0 10px 30px rgba(110,168,254,.25);
+  }
+  h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); letter-spacing: -.02em; }
+  .tagline { margin: 2px 0 0; color: var(--muted); }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+  .badge {
+    font-size: 12px; font-weight: 600; color: #cfd6e6;
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 5px 10px; border-radius: 999px;
+  }
+  .badge.good { color: var(--good); border-color: rgba(69,212,131,.3); }
+  .badge.warn { color: var(--warn); border-color: rgba(242,184,75,.3); }
+
+  .source-box {
+    margin: 26px 0 10px; padding: 18px;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line); border-radius: 16px;
+  }
+  .source-label { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 700; }
+  .source-row { display: flex; gap: 10px; align-items: stretch; margin-top: 8px; }
+  .source-input {
+    flex: 1; min-width: 0; font: 500 14px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text); background: #0a0c11; border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px 14px; overflow: hidden; text-overflow: ellipsis;
+  }
+  button {
+    font: 600 14px/1 inherit; color: #0a0c11; background: var(--accent);
+    border: 0; border-radius: 10px; padding: 0 16px; cursor: pointer;
+    transition: transform .08s ease, filter .15s ease;
+  }
+  button:hover { filter: brightness(1.08); }
+  button:active { transform: translateY(1px); }
+  .installers { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .installers a {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    border: 1px solid var(--line); background: var(--panel-2);
+    padding: 9px 12px; border-radius: 10px; text-decoration: none;
+  }
+  .installers a:hover { border-color: var(--accent); text-decoration: none; }
+
+  h2 { margin: 40px 0 14px; font-size: 20px; letter-spacing: -.01em; }
+  .notice {
+    border: 1px solid rgba(242,184,75,.28); background: rgba(242,184,75,.07);
+    color: #f6d79a; border-radius: 14px; padding: 14px 16px; font-size: 14px;
+  }
+  .notice strong { color: var(--warn); }
+
+  .grid { display: grid; gap: 14px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    padding: 18px; transition: border-color .15s ease, transform .15s ease;
+  }
+  .card:hover { border-color: #36415a; transform: translateY(-1px); }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+  .card h3 { margin: 0; font-size: 17px; }
+  .id { margin: 3px 0 0; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
+  .ver { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+  .card p { margin: 12px 0 0; color: #c7cedd; font-size: 14.5px; }
+  .card ul { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+  .card li { margin: 3px 0; }
+  details { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+  summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent); }
+  code, pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+  }
+  pre {
+    background: #0a0c11; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px; overflow-x: auto; color: #cfd6e6;
+  }
+  .muted { color: var(--muted); }
+  footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px);
+    background: var(--good); color: #06250f; font-weight: 700; font-size: 14px;
+    padding: 10px 16px; border-radius: 999px; opacity: 0; pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 560px) {
+    .source-row { flex-wrap: wrap; }
+    .source-row button { width: 100%; padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo" aria-hidden="true">🧩</div>
+    <div>
+      <h1>LegacyFixes</h1>
+      <p class="tagline">Compatibility fixes for apps that still run on iOS 6–9 (32-bit).</p>
+    </div>
+  </header>
+
+  <div class="badges">
+    <span class="badge">iOS 6 – 9</span>
+    <span class="badge">armv7</span>
+    <span class="badge">Cydia / Sileo / Zebra</span>
+    <span class="badge good">Open source</span>
+    <span class="badge warn">Work in progress</span>
+  </div>
+
+  <section class="source-box">
+    <div class="source-label">Add this source</div>
+    <div class="source-row">
+      <div class="source-input" id="source" title="Repository URL">Loading…</div>
+      <button id="copy" type="button">Copy</button>
+    </div>
+    <div class="installers">
+      <a id="cydia" href="#">Open in Cydia</a>
+      <a id="sileo" href="#">Open in Sileo</a>
+      <a id="zebra" href="#">Open in Zebra</a>
+    </div>
+  </section>
+
+  <div class="notice">
+    <strong>Heads up:</strong> the generic layer (update-nag suppression, OS/User-Agent
+    spoofing, config-driven hooks) is useful on its own, but resurrecting a dead
+    service API needs per-app reverse engineering. The repo is structured so each
+    app fix can grow independently — see <code>docs/adding-a-fix.md</code> in the
+    project repository.
+  </div>
+
+  <h2>Packages</h2>
+  <div class="grid">
+
+    <article class="card">
+      <div class="card-head">
+        <div><h3>LegacyFixes All-in-One</h3><p class="id">com.legacyfixes.allinone</p></div>
+        <span class="ver">1.0.0</span>
+      </div>
+      <p>Metapackage that installs every app fix below in one tap. Remove it later if you only want some of them.</p>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div><h3>LegacyFix: YouTube</h3><p class="id">com.legacyfixes.youtube</p></div>
+        <span class="ver">1.0.0</span>
+      </div>
+      <p>Compatibility layer for the App Store YouTube app and its older releases.</p>
+      <ul>
+        <li>Hides “update required / no longer supported” alerts</li>
+        <li>Optional iOS version and User-Agent spoofing</li>
+        <li>Config-driven hook engine + class/method dumper for writing real API fixes</li>
+      </ul>
+      <details>
+        <summary>Configuration</summary>
+        <p>Defaults: <code>/Library/Application Support/LegacyFixes/Patches/com.google.ios.youtube.plist</code><br>
+        Per-device overrides: <code>/var/mobile/Library/Preferences/com.legacyfixes.com.google.ios.youtube.plist</code></p>
+        <p class="muted">Restart the app after changes. Logs go to <code>/var/mobile/Library/Logs/LegacyFixes/</code>.</p>
+      </details>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div><h3>LegacyFix: YouTube Kids</h3><p class="id">com.legacyfixes.youtubekids</p></div>
+        <span class="ver">1.0.0</span>
+      </div>
+      <p>The same compatibility layer for YouTube Kids (bundle <code>com.google.ios.youtubekids</code>).</p>
+      <ul>
+        <li>Update-nag suppression</li>
+        <li>Optional OS / User-Agent spoofing</li>
+        <li>Runtime diagnostics to find gating methods</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div><h3>LegacyFix: Facebook</h3><p class="id">com.legacyfixes.facebook</p></div>
+        <span class="ver">1.0.0</span>
+      </div>
+      <p>Compatibility layer for the classic Facebook app on 32-bit iOS.</p>
+      <ul>
+        <li>Hides forced-update and unsupported-client alerts</li>
+        <li>Optional version / User-Agent spoofing</li>
+        <li>Hook table for login and API fixes you add yourself</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div><h3>LegacyFix: Messenger</h3><p class="id">com.legacyfixes.messenger</p></div>
+        <span class="ver">1.0.0</span>
+      </div>
+      <p>Compatibility layer for Facebook Messenger on legacy iOS.</p>
+      <ul>
+        <li>Update-nag suppression</li>
+        <li>Optional OS / User-Agent spoofing</li>
+        <li>Same extensible patch engine as the other packages</li>
+      </ul>
+    </article>
+
+  </div>
+
+  <h2>Install</h2>
+  <p class="muted">Jailbreak first (e.g. with <a href="https://github.com/LukeZGD/Legacy-iOS-Kit">Legacy iOS Kit</a>), then:</p>
+  <ol class="muted">
+    <li>Open Cydia / Sileo / Zebra → Sources → Edit → Add.</li>
+    <li>Paste the source URL above.</li>
+    <li>Install <strong>LegacyFixes All-in-One</strong>, or pick individual packages.</li>
+    <li>Respring and launch the app. Check logs if something misbehaves.</li>
+  </ol>
+  <p class="muted">On iOS 6, Cydia's APT may not negotiate TLS 1.2 with GitHub Pages. If the
+  source refuses to load, install a TLS backport such as TLSFix first, or use an HTTP mirror.</p>
+
+  <footer>
+    <p>Packages are built for <code>iphoneos-arm</code> (32-bit) with a deployment target of iOS 6.0.
+    Only install on devices you own. No DRM or paid-feature bypasses are included.</p>
+    <p>Source code and build instructions live in the GitHub repository.</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+(function () {
+  var clean = location.origin + location.pathname
+      .replace(/index\.html$/, '')
+      .replace(/\/?$/, '/');
+  if (location.protocol === 'file:') {
+    clean = 'https://YOUR_GITHUB_USERNAME.github.io/legacyfixes/';
+  }
+
+  var encoded = encodeURIComponent(clean);
+  var el = document.getElementById('source');
+  el.textContent = clean;
+  el.title = clean;
+
+  document.getElementById('cydia').href =
+    'cydia://url/https://cydia.saurik.com/api/share#?source=' + encoded;
+  document.getElementById('sileo').href = 'sileo://source/' + clean;
+  document.getElementById('zebra').href = 'zbra://sources/add/' + clean;
+
+  var toast = document.getElementById('toast');
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function () { toast.classList.remove('show'); }, 1400);
+  }
+
+  document.getElementById('copy').addEventListener('click', function () {
+    function done() { showToast('Source URL copied'); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(clean).then(done, function () { showToast(clean); });
+    } else {
+      var t = document.createElement('textarea');
+      t.value = clean;
+      document.body.appendChild(t);
+      t.select();
+      try { document.execCommand('copy'); done(); } catch (e) { showToast(clean); }
+      document.body.removeChild(t);
+    }
+  });
+})();
+</script>
+</body>
+</html>

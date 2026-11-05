@@ -1,0 +1,9 @@
+Package: com.legacyfixes.youtube
+Name: LegacyFix: YouTube
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Compatibility helpers for YouTube on iOS 6-9 (32-bit). Suppresses update nags, can spoof the reported iOS version and User-Agent, and ships a config-driven hook engine for app-specific fixes.
+Maintainer: LegacyFixes
+Author: LegacyFixes
+Section: Tweaks
+Depends: mobilesubstrate, firmware (>= 6.0), firmware (<< 10.0)

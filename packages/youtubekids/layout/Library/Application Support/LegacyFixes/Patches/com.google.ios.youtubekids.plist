@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Master switch. Set false to disable all LegacyFixes behaviour. -->
+    <key>Enabled</key>
+    <true/>
+
+    <!-- Report a different iOS version to THIS app. Leave empty to disable.
+         Example: <string>9.3.5</string> on an iOS 6 device. -->
+    <key>SystemVersion</key>
+    <string></string>
+
+    <!-- Replace the outgoing User-Agent header for THIS app.
+         Leave empty to disable. -->
+    <key>UserAgent</key>
+    <string></string>
+
+    <!-- Hide alerts whose title/message contains any of these strings. -->
+    <key>SuppressAlerts</key>
+    <array>
+        <string>update required</string>
+        <string>new version</string>
+        <string>no longer supported</string>
+        <string>please update</string>
+        <string>upgrade required</string>
+    </array>
+
+    <!-- Only enable if you are debugging a pinned TLS endpoint. -->
+    <key>BypassCertPinning</key>
+    <false/>
+
+    <!-- Diagnostics: dump class names / methods to the log at launch. -->
+    <key>DumpClasses</key>
+    <false/>
+    <key>DumpClassesFilter</key>
+    <string></string>
+    <key>DumpMethodsForClasses</key>
+    <array/>
+
+    <!-- Config-driven patches for zero-argument methods.
+         Example:
+         <dict>
+             <key>Class</key><string>SomeClass</string>
+             <key>Selector</key><string>isSupported</string>
+             <key>Return</key><true/>
+             <key>Log</key><true/>
+         </dict>
+    -->
+    <key>Patches</key>
+    <array/>
+</dict>
+</plist>

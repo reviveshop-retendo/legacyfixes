@@ -1,0 +1,10 @@
+.git
+build
+repo/debs
+repo/Packages
+repo/Packages.gz
+repo/Release
+packages/*/.theos
+packages/*/packages
+packages/*/obj
+**/.DS_Store

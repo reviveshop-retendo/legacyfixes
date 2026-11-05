@@ -1,0 +1,18 @@
+# Build artifacts
+build/
+packages/*/.theos/
+packages/*/packages/
+packages/*/obj/
+
+# Generated repo metadata (do not commit; CI regenerates it)
+repo/Packages
+repo/Packages.gz
+repo/Packages.bz2
+repo/Release
+repo/Release.gpg
+repo/InRelease
+repo/debs/
+
+# Editor / OS noise
+.DS_Store
+*.swp
