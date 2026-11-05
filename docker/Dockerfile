@@ -33,5 +33,14 @@ RUN "$THEOS/bin/install-sdk" iPhoneOS9.3
 RUN sed -i 's| /usr/lib/system/liblaunch\.dylib,||' \
     "$THEOS/sdks/iPhoneOS9.3.sdk/usr/lib/libSystem.tbd"
 
+# CI runs the container as the runner's arbitrary UID. Theos lives in
+# /home/builder, which useradd creates as 0750; without traversal permission
+# make cannot read the Theos makefiles and fails with "No rule to make target
+# '/tweak.mk'". Keep this as its own layer so it does not invalidate the
+# expensive Theos/SDK install above.
+USER root
+RUN chmod 0755 /home/builder
+USER builder
+
 WORKDIR /work
 CMD ["bash"]
