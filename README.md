@@ -35,14 +35,18 @@ It is a working monorepo, not just a list of packages:
 Target: `iphoneos-arm` (armv7), minimum iOS 6.0, maximum iOS 9.x. It will not
 run on arm64 devices.
 
+**Live source:** <https://reviveshop-retendo.github.io/legacyfixes>
+
+Add that URL in Cydia, Sileo or Zebra (see the iOS 6 TLS caveat below).
+
 ## Quick start (build locally)
 
 Requirements: Docker. Everything else (Theos, toolchain, iOS SDK, dpkg tools)
 lives in the build image.
 
 ```bash
-# Optional: set your Pages URL so the Release metadata matches your source
-./scripts/set-repo-url.sh https://YOURNAME.github.io/legacyfixes
+# Point repo.conf at your Pages URL (already set for this instance)
+./scripts/set-repo-url.sh https://reviveshop-retendo.github.io/legacyfixes
 
 # Build every deb and regenerate the repo metadata
 ./scripts/docker-build.sh
@@ -71,14 +75,17 @@ ssh root@<device-ip> 'dpkg -i /tmp/com.legacyfixes.youtube_*.deb && killall -9 Y
 
 ## Publish with GitHub Pages
 
-1. Push this repository to GitHub (the default branch must be `main`).
+This instance is published from `reviveshop-retendo/legacyfixes` to
+<https://reviveshop-retendo.github.io/legacyfixes>. To publish your own fork:
+
+1. Push the repository to GitHub (the default branch must be `main`).
 2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
 3. Push a commit. `.github/workflows/build.yml` builds in Docker and deploys
    `repo/` to Pages.
-4. Set the source URL users should add:
+4. Point `repo.conf` at your Pages URL:
 
    ```bash
-   ./scripts/set-repo-url.sh https://YOURNAME.github.io/legacyfixes
+   ./scripts/set-repo-url.sh https://YOURNAME.github.io/YOUR-REPO
    ```
 
 The page at that URL computes the source address from the browser location,
