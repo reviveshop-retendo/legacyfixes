@@ -20,9 +20,6 @@ different reasons, and only the first one is fully fixable by a client tweak:
 | **Instagram / Twitter / Reddit / Spotify** | Not included | API changes, minimum version | Good candidates for new packages. |
 | **WhatsApp / Snapchat** | Not included | Aggressive server-side version enforcement | Do not expect these to work. |
 
-“Engine only” means the package installs and can suppress update walls / spoof
-OS + User-Agent, but it does **not** restore the service by itself.
-
 ## YouTube
 
 `com.legacyfixes.youtube` **works** because it depends on
@@ -59,8 +56,8 @@ Facebook 11.x is the last build that runs on iOS 6. Two things broke:
    `graph.facebook.com//me/privacy_options`, `graph.facebook.com/me/links`
    and `api.facebook.com/method/auth.login` with an old app token. This causes
    crashes/hangs and failed logins. The package's `FacebookSystemFix` component
-   registers an `NSURLProtocol` in `accountsd`, `sociald`, `SocialUIService`
-   and `SpringBoard` and rewrites exactly those requests.
+   registers an `NSURLProtocol` in `accountsd`, `sociald`, `SocialUIService`,
+   `Preferences` and `SpringBoard` and rewrites exactly those requests.
 2. **The client version wall.** The app reports itself as an old Facebook build
    and refuses to continue. `LegacyFixes` overrides `CFBundleShortVersionString`,
    `FBAppVersion` and `FBPlatformVersion` *inside the process* (no edits to the
