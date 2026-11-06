@@ -44,6 +44,15 @@ static UIViewController *LFTopViewController(void) {
 
     self.title = @"YouTube Kids";
 
+    // Some Google properties serve an "unsupported browser" page to old iOS
+    // user agents. Allow a per-device UA override without changing the rest of
+    // the app's networking: UIWebView picks this up from NSUserDefaults.
+    NSString *userAgent = LFStringConfig(@"WebFallbackUserAgent", nil);
+    if (userAgent.length > 0) {
+        [[NSUserDefaults standardUserDefaults] registerDefaults:
+            @{ @"UserAgent": userAgent }];
+    }
+
     self.webView = [[UIWebView alloc] initWithFrame:self.view.bounds];
     self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth |
                                     UIViewAutoresizingFlexibleHeight;
@@ -57,7 +66,17 @@ static UIViewController *LFTopViewController(void) {
                              action:@selector(reload)];
     self.navigationItem.rightBarButtonItem = reload;
 
+    UIBarButtonItem *done = [[UIBarButtonItem alloc]
+        initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                             target:self
+                             action:@selector(done)];
+    self.navigationItem.leftBarButtonItem = done;
+
     [self loadHome];
+}
+
+- (void)done {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)loadHome {
@@ -115,6 +134,10 @@ static void LFPresentYouTubeKidsFallback(void) {
 }
 
 static void LFScheduleYouTubeKidsFallback(void) {
+    id enabled = LFConfigValue(@"Enabled");
+    if (enabled && ![enabled boolValue]) {
+        return;
+    }
     if (![LFConfigValue(@"WebFallback") boolValue]) {
         return;
     }

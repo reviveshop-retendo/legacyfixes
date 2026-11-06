@@ -177,6 +177,7 @@ Useful keys:
 | `WebFallback` | bool | YouTube Kids only: use the in-app web client |
 | `WebFallbackURL` | string | YouTube Kids only: page to load |
 | `WebFallbackDelay` | number | YouTube Kids only: seconds to wait after launch |
+| `WebFallbackUserAgent` | string | YouTube Kids only: optional UIWebView User-Agent |
 
 Example patch rule (disable a boolean gate without writing code):
 

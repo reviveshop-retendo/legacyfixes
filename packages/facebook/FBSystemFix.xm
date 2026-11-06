@@ -45,6 +45,7 @@ static NSString *const kLFCurrentSystemToken =
 
     if ([host isEqualToString:@"graph.facebook.com"]) {
         return [path isEqualToString:@"//me/privacy_options"] ||
+               [path isEqualToString:@"/me/privacy_options"] ||
                [path isEqualToString:@"/me/links"];
     }
     if ([host isEqualToString:@"api.facebook.com"]) {
@@ -70,7 +71,8 @@ static NSString *const kLFCurrentSystemToken =
         BOOL unwrapPrivacyOptions = NO;
 
         if ([host isEqualToString:@"graph.facebook.com"] &&
-            [path isEqualToString:@"//me/privacy_options"]) {
+            ([path isEqualToString:@"//me/privacy_options"] ||
+             [path isEqualToString:@"/me/privacy_options"])) {
             // Old clients ask for "//me/privacy_options"; the modern graph
             // equivalent is "me?fields=privacy_options".
             NSString *newURL = @"https://graph.facebook.com/me?fields=privacy_options";

@@ -328,9 +328,59 @@ static void LFInstallCertificatePinningBypass(void) {
 
 static id (*LFOriginalInfoPlistObject)(id, SEL, NSString *);
 static NSDictionary *(*LFOriginalInfoDictionary)(id, SEL);
+static CFDictionaryRef (*LFOriginalCFBundleGetInfoDictionary)(CFBundleRef);
+static CFTypeRef (*LFOriginalCFBundleGetValueForInfoDictionaryKey)(CFBundleRef, CFStringRef);
+static CFMutableDictionaryRef gMergedCFInfoDictionary = NULL;
 
 static BOOL LFIsMainBundle(id bundle) {
     return bundle != nil && bundle == [NSBundle mainBundle];
+}
+
+static BOOL LFIsMainCFBundle(CFBundleRef bundle) {
+    return bundle != NULL && bundle == CFBundleGetMainBundle();
+}
+
+static void LFBuildMergedCFInfoDictionary(CFDictionaryRef info) {
+    if (gMergedCFInfoDictionary) {
+        return;
+    }
+    if (info) {
+        gMergedCFInfoDictionary = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, info);
+    } else {
+        gMergedCFInfoDictionary = CFDictionaryCreateMutable(
+            kCFAllocatorDefault, 0,
+            &kCFTypeDictionaryKeyCallBacks,
+            &kCFTypeDictionaryValueCallBacks);
+    }
+    for (NSString *key in gInfoOverrides) {
+        CFDictionarySetValue(gMergedCFInfoDictionary,
+                             (__bridge CFStringRef)key,
+                             (__bridge CFTypeRef)gInfoOverrides[key]);
+    }
+}
+
+static CFDictionaryRef LFCFBundleGetInfoDictionary(CFBundleRef bundle) {
+    CFDictionaryRef info = LFOriginalCFBundleGetInfoDictionary
+                               ? LFOriginalCFBundleGetInfoDictionary(bundle)
+                               : NULL;
+    if (!LFIsMainCFBundle(bundle)) {
+        return info;
+    }
+    LFBuildMergedCFInfoDictionary(info);
+    return gMergedCFInfoDictionary;
+}
+
+static CFTypeRef LFCFBundleGetValueForInfoDictionaryKey(CFBundleRef bundle, CFStringRef key) {
+    if (LFIsMainCFBundle(bundle) && key) {
+        NSString *stringKey = (__bridge NSString *)key;
+        id override = gInfoOverrides[stringKey];
+        if (override) {
+            return (__bridge CFTypeRef)override;
+        }
+    }
+    return LFOriginalCFBundleGetValueForInfoDictionaryKey
+               ? LFOriginalCFBundleGetValueForInfoDictionaryKey(bundle, key)
+               : NULL;
 }
 
 static id LFInfoPlistObject(id self, SEL _cmd, NSString *key) {
@@ -370,6 +420,28 @@ static void LFInstallInfoPlistOverrides(void) {
                     @selector(infoDictionary),
                     (IMP)LFInfoDictionary,
                     (IMP *)&LFOriginalInfoDictionary);
+
+    // Some legacy apps read their version straight out of CoreFoundation
+    // (CFBundleGetValueForInfoDictionaryKey / CFBundleGetInfoDictionary)
+    // instead of going through NSBundle, so hook both paths too.
+    void *getInfoDictionary = dlsym(RTLD_DEFAULT, "CFBundleGetInfoDictionary");
+    if (getInfoDictionary) {
+        MSHookFunction(getInfoDictionary,
+                       (void *)LFCFBundleGetInfoDictionary,
+                       (void **)&LFOriginalCFBundleGetInfoDictionary);
+    } else {
+        LFLog(@"CFBundleGetInfoDictionary not found");
+    }
+
+    void *getValue = dlsym(RTLD_DEFAULT, "CFBundleGetValueForInfoDictionaryKey");
+    if (getValue) {
+        MSHookFunction(getValue,
+                       (void *)LFCFBundleGetValueForInfoDictionaryKey,
+                       (void **)&LFOriginalCFBundleGetValueForInfoDictionaryKey);
+    } else {
+        LFLog(@"CFBundleGetValueForInfoDictionaryKey not found");
+    }
+
     LFLog(@"overriding Info.plist keys: %@",
           [[gInfoOverrides allKeys] componentsJoinedByString:@", "]);
 }
