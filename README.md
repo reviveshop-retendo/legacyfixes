@@ -18,19 +18,20 @@ It is a working monorepo, not just a list of packages:
 
 > **Reality check:** the shared engine fixes common *client-side* problems
 > (forced-update walls, OS checks, old user agents, pinned endpoints). It does
-> not magically resurrect a service whose APIs were shut down. Real API
-> rewrites are per-app work — see [docs/adding-a-fix.md](docs/adding-a-fix.md)
-> and [docs/app-compatibility.md](docs/app-compatibility.md).
+> not magically resurrect a service whose APIs were shut down. YouTube is fixed
+> by the vendored TubeReplacer backend; the other apps use app-specific
+> rewrites where a public, working technique exists.
 
 ## What is in this repo
 
 | Package | Bundle ID | What it does |
 | --- | --- | --- |
 | `com.legacyfixes.allinone` | — | Metapackage that installs everything |
-| `com.legacyfixes.youtube` | `com.google.ios.youtube` | Alerts, spoofing, hook engine/diagnostics |
-| `com.legacyfixes.youtubekids` | `com.google.ios.youtubekids` | Same, for YouTube Kids |
-| `com.legacyfixes.facebook` | `com.facebook.Facebook` | Same, for Facebook |
-| `com.legacyfixes.messenger` | `com.facebook.Messenger` | Same, for Messenger |
+| `com.legacyfixes.youtube` | `com.google.ios.youtube` | **Working fix.** Depends on the vendored TubeReplacer backend (search, playback, sign-in) plus alert suppression and the shared engine |
+| `com.legacyfixes.youtubekids` | `com.google.ios.youtubekids` | Same engine, for YouTube Kids |
+| `com.legacyfixes.facebook` | `com.facebook.Facebook` | Info.plist version spoofing + system Facebook-integration fix + engine |
+| `com.legacyfixes.messenger` | `com.facebook.Messenger` | Info.plist version spoofing + engine |
+| `dev.preloading.tubereplacer` | `com.google.ios.youtube*` | Vendored TubeReplacer 2.0.2 (GPL-3.0); pulled in automatically by the YouTube package |
 
 Target: `iphoneos-arm` (armv7), minimum iOS 6.0, maximum iOS 9.x. It will not
 run on arm64 devices.

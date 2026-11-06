@@ -16,3 +16,9 @@ repo/debs/
 # Editor / OS noise
 .DS_Store
 *.swp
+
+# Vendored TubeReplacer build output / generated protobuf code
+vendor/TubeReplacer/.theos/
+vendor/TubeReplacer/packages/
+vendor/TubeReplacer/common/SABR/proto/generated/*
+!vendor/TubeReplacer/common/SABR/proto/generated/.gitkeep

@@ -157,11 +157,11 @@
   </section>
 
   <div class="notice">
-    <strong>Heads up:</strong> the generic layer (update-nag suppression, OS/User-Agent
-    spoofing, config-driven hooks) is useful on its own, but resurrecting a dead
-    service API needs per-app reverse engineering. The repo is structured so each
-    app fix can grow independently — see <code>docs/adding-a-fix.md</code> in the
-    project repository.
+    <strong>YouTube works.</strong> The YouTube package pulls in a vendored,
+    source-built <a href="https://github.com/Preloading/TubeReplacer">TubeReplacer</a>
+    backend (GPL-3.0), which restores search, playback and sign-in for the
+    classic App Store YouTube app (1.0–2.0) on iOS 5–10. The other apps use
+    per-app version/API fixes; see the cards below.
   </div>
 
   <h2>Packages</h2>
@@ -178,18 +178,20 @@
     <article class="card">
       <div class="card-head">
         <div><h3>LegacyFix: YouTube</h3><p class="id">com.legacyfixes.youtube</p></div>
-        <span class="ver">1.0.0</span>
+        <span class="ver">1.1.0</span>
       </div>
-      <p>Compatibility layer for the App Store YouTube app and its older releases.</p>
+      <p><strong>Working fix.</strong> Restores the classic App Store YouTube app
+      (versions 1.0–2.0) by installing the vendored, source-built TubeReplacer
+      backend.</p>
       <ul>
-        <li>Hides “update required / no longer supported” alerts</li>
-        <li>Optional iOS version and User-Agent spoofing</li>
-        <li>Config-driven hook engine + class/method dumper for writing real API fixes</li>
+        <li>Search, home feed, playback and sign-in work again</li>
+        <li>Automatic dependency: <code>dev.preloading.tubereplacer</code> 2.0.2</li>
+        <li>Update-nag suppression and the configurable hook engine also included</li>
       </ul>
       <details>
         <summary>Configuration</summary>
-        <p>Defaults: <code>/Library/Application Support/LegacyFixes/Patches/com.google.ios.youtube.plist</code><br>
-        Per-device overrides: <code>/var/mobile/Library/Preferences/com.legacyfixes.com.google.ios.youtube.plist</code></p>
+        <p>TubeReplacer settings appear in <strong>Settings → TubeReplacer</strong> after installing.<br>
+        LegacyFixes overrides: <code>/var/mobile/Library/Preferences/com.legacyfixes.com.google.ios.youtube.plist</code></p>
         <p class="muted">Restart the app after changes. Logs go to <code>/var/mobile/Library/Logs/LegacyFixes/</code>.</p>
       </details>
     </article>

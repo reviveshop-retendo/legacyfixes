@@ -1,0 +1,282 @@
+// getvideo.x
+// TubeReplacer
+//
+// Video detail request and parsing hooks
+// Makes both /player (for streams) and /next (for likes) requests
+
+#import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
+#import <objc/runtime.h>
+#include "appheaders.h"
+#include "general.h"
+#include "Translators/TRTranslators.h"
+#import "common/challengesolver/challengesolver-potokens.h"
+
+// Forward declare new methods for YTVideoParser
+@interface YTVideoParser : NSObject
+-(id)parseElement:(id)fp8 error:(id *)fp12;
+// New methods
+-(NSDictionary *)fetchNextDataForVideoId:(NSString *)videoId;
+-(void)enhanceVideo:(id)video withNextData:(NSDictionary *)nextData;
+@end
+
+#pragma mark - Request Dispatch
+
+%hook YTGDataService
+
+-(void)makeVideoRequestWithVideoID:(NSString*)videoId responseBlock:(id)responseBlock errorBlock:(id)errorBlock {
+    id videoCache = [self valueForKey:l(@"videoCache")];
+    id cachedVideo = [videoCache objectForKey:videoId];
+   
+   
+
+    if (cachedVideo) {
+        [self performResponseBlock:responseBlock response:cachedVideo];
+    } else {
+        NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/dev.preloading.tubereplacer.preferences.plist"];
+        NSString *poToken = @"";
+        TRPOTokenSolver *challengeSolver = [(YTDeviceAuthorizer*)[self valueForKey:l(@"deviceAuthorizer")] challengeSolver];
+        if ([preferences[@"StreamType"] isEqualToString:@"web"] || [preferences[@"StreamType"] isEqualToString:@"mweb"]) {
+            poToken = [challengeSolver mintPOTokenOrColdStart:videoId];
+        }
+
+        NSString *requestURL = @"https://www.youtube.com/youtubei/v1/player?prettyPrint=false";     
+//  @throw NSInternalInconsistencyException;
+        YoutubeClientType *client = [YoutubeClientType webClient];
+        if ([preferences[@"StreamType"] isEqualToString:@"mweb"]) {
+            client = [YoutubeClientType webMobileClient];
+        } else if ([preferences[@"StreamType"] isEqualToString:@"visionos"]) {
+            client = [YoutubeClientType visionOSClient];
+            requestURL = @"https://www.youtube.com/youtubei/v1/player?prettyPrint=false&noauth=1";
+        } else if ([preferences[@"StreamType"] isEqualToString:@"android"]) {
+            client = [YoutubeClientType androidClient];
+            requestURL = @"https://www.youtube.com/youtubei/v1/player?prettyPrint=false&noauth=1";
+        } else if ([preferences[@"StreamType"] isEqualToString:@"androidvr"]) {
+            client = [YoutubeClientType androidVrClient];
+            requestURL = @"https://www.youtube.com/youtubei/v1/player?prettyPrint=false&noauth=1";
+        }
+
+        GTMURLBuilder *urlBuilder = [%c(GTMURLBuilder) builderWithString:requestURL];
+        NSURL *fullURL = [urlBuilder URL];
+        
+        YTGDataRequest *request = nil;
+        if ([version() isEqualToString:@"1.0.0"] || [version() isEqualToString:@"1.0.1"]) {
+            request = [%c(YTGDataRequest) requestWithURL:fullURL 
+                            authentication:nil 
+                            body:[TRRequestBuilder playerBodyWithVideoId:videoId 
+                                    poToken:poToken
+                                    signatureTimestamp:@([challengeSolver nsigSignatureTimestamp])
+                                    client:client]
+                    ];
+        } else {
+            request = [(YTGDataRequestFactory*)[self valueForKey:l(@"GDataRequestFactory")] requestWithURL:fullURL 
+                            authentication:nil 
+                            body:[TRRequestBuilder playerBodyWithVideoId:videoId 
+                                poToken:poToken
+                                signatureTimestamp:@([challengeSolver nsigSignatureTimestamp])
+                                client:client]
+                    ];
+        }
+        [self makePOSTRequest:request 
+                    withParser:[self valueForKey:l(@"videoParser")] 
+                    responseBlock:responseBlock
+                    errorBlock:errorBlock];
+    }
+}
+
+%end
+
+#pragma mark - Video Parsing
+
+%hook YTVideoParser
+
+-(YTVideo*)parseElement:(id)body error:(NSError*)error {
+    if (![body isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"YTVideoParser: input is not NSDictionary");
+        return nil;
+    }
+    
+    TRVideoTranslator *translator = [[[TRVideoTranslator alloc] init] autorelease];
+    NSError *translatorError = nil;
+    id video = [translator translateJSON:body error:&translatorError];
+    
+    if (translatorError) {
+        NSLog(@"TRVideoTranslator error: %@", translatorError);
+        return nil;
+    }
+    
+    // Enhance with /next data for like counts
+    NSString *videoId = [TRJSONUtils stringFromJSON:body keyPath:@"videoDetails.videoId"];
+    
+    if (videoId && video) {
+        @try {
+            NSDictionary *nextData = [self fetchNextDataForVideoId:videoId];
+            if (nextData) {
+                [translator enhanceVideo:video withNextResponse:nextData];
+            }
+        } @catch (NSException *e) {
+            NSLog(@"Failed to fetch /next data: %@", e);
+        }
+    }
+    
+    return video;
+}
+
+%new
+-(NSDictionary *)fetchNextDataForVideoId:(NSString *)videoId {
+    // Synchronous request to /next endpoint
+    // Consider making this async for better UX BUT im lazy
+    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/dev.preloading.tubereplacer.preferences.plist"];
+    NSMutableDictionary *allData = [NSMutableDictionary dictionary];
+
+    if (!(preferences[@"StreamType"] == nil || [preferences[@"StreamType"] isEqualToString:@"web"] || [preferences[@"StreamType"] isEqualToString:@"mweb"])) {
+        NSURL *url = [NSURL URLWithString:@"https://www.youtube.com/youtubei/v1/next?prettyPrint=false"];
+    
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        [request setHTTPMethod:@"POST"];
+        [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        
+
+        [request setHTTPBody:[TRRequestBuilder nextBodyWithVideoId:videoId 
+                                                            client:[YoutubeClientType webMobileClient]]];
+        // TODO: figure out how to get authentication here
+        // [authentication authorizeNSRequest:&request];
+        NSURLResponse *response = nil;
+        NSError *reqError = nil;
+        NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&reqError];
+        
+        if (!reqError && data) {
+            NSError *jsonError = nil;
+
+            allData[@"next"] = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+        }
+    }
+
+    
+    // TODO: this should be running at the same time as the next request
+    id rawUseRTYDL = preferences[@"UseRTYDL"];
+    BOOL useRTYDL = rawUseRTYDL ? [rawUseRTYDL boolValue] : YES; // default YES when unset
+
+    if (!useRTYDL) {
+        return allData;
+    }
+    NSURL *rytdl = [NSURL URLWithString:[NSString stringWithFormat:@"https://returnyoutubedislikeapi.com/votes?videoId=%@", videoId]];
+    
+    NSMutableURLRequest *requestDL = [NSMutableURLRequest requestWithURL:rytdl];
+    [requestDL setHTTPMethod:@"GET"];
+    
+    NSURLResponse *responseDL = nil;
+    NSError *reqErrorDL = nil;
+    NSData *dataDL = [NSURLConnection sendSynchronousRequest:requestDL returningResponse:&responseDL error:&reqErrorDL];
+    
+    if (!reqErrorDL && dataDL) {
+        NSError *jsonErrorDL = nil;
+        allData[@"dislikes"] = [NSJSONSerialization JSONObjectWithData:dataDL options:0 error:&jsonErrorDL];
+    }
+    
+    return allData;
+}
+
+%end
+
+// this is just for debugging setting strings as NSURL
+%hook __NSCFString
+
+%new
+-(id)host {
+    NSLog(@"String got a host call!");
+    [%c(GIPToast) showTodo];
+    return nil; // things go wrong here
+}
+%end
+
+BOOL bkgPlayPref(void)
+{
+    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/dev.preloading.tubereplacer.preferences.plist"];
+    return PreferencesBoolValue(preferences, @"BkgPlay", YES);
+}
+
+void setBackgroundPlaybackAllowed(id obj)
+{
+    // 1.0.0 & 1.0.1 don't have this field and would crash
+    // 1.1.0 has this field, but the logic is incomplete
+    if ([version() isEqualToString:@"1.0.0"] || [version() isEqualToString:@"1.0.1"])
+        return;
+
+    id bkgPlay = bkgPlayPref() ? @YES : @NO;
+    [obj setValue:bkgPlay forKey:l(@"backgroundPlaybackAllowed")];
+}
+
+%hook YTPlayer
+-(BOOL)backgroundPlaybackAllowed
+{
+    return bkgPlayPref();
+}
+-(void)setStreamURL:(id)streamURL initialMediaTime:(double)initialMediaTime airPlayAllowed:(BOOL)airPlayAllowed {
+    %orig;
+    setBackgroundPlaybackAllowed(self);
+}
+%end
+
+%hook YTPlayerController
+- (void)appDidEnterBackground
+{
+    setBackgroundPlaybackAllowed(self);
+    %orig;
+}
+
+- (void)appDidBecomeActive
+{
+    setBackgroundPlaybackAllowed(self);
+    %orig;
+}
+
+- (void)appWillResignActive
+{
+    setBackgroundPlaybackAllowed(self);
+    %orig;
+}
+
+-(void)loadVideoStream
+{
+    %orig;
+    setBackgroundPlaybackAllowed(self);
+}
+%end
+
+%hook YTPlayerViewController
+- (void)appWillResignActive
+{
+    setBackgroundPlaybackAllowed(self);
+    %orig;
+}
+- (void)playerStateDidChangeToPlaying
+{
+    setBackgroundPlaybackAllowed(self);
+    %orig;
+}
+-(BOOL)backgroundPlaybackAllowed
+{
+    return bkgPlayPref();
+}
+
+%end
+
+%hook MLPlayer
+
+- (void)appDidBecomeActive
+{
+    setBackgroundPlaybackAllowed(self);
+    %orig;
+}
+- (void)appDidEnterBackground
+{
+    setBackgroundPlaybackAllowed(self);
+    %orig;
+}
+-(BOOL)backgroundPlaybackAllowed
+{
+    return bkgPlayPref();
+}
+
+%end

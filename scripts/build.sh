@@ -25,6 +25,7 @@ for pkg in "${APP_PACKAGES[@]}"; do
     dir="$ROOT/packages/$pkg"
     echo "==> building $pkg"
     make -C "$dir" clean >/dev/null 2>&1 || true
+    rm -rf "$dir/packages"
     make -C "$dir" package FINALPACKAGE=1
     shopt -s nullglob
     debs=("$dir"/packages/*.deb)
@@ -35,6 +36,28 @@ for pkg in "${APP_PACKAGES[@]}"; do
     fi
     cp "${debs[@]}" "$DEB_OUT/"
 done
+
+# TubeReplacer is the actual YouTube 1.0-2.0 backend replacement. It is
+# vendored (GPL-3.0) so this repo can ship a working fix without making
+# users add a second source. See vendor/README.md.
+TUBEREPLACER_DIR="$ROOT/vendor/TubeReplacer"
+if [[ -d "$TUBEREPLACER_DIR" ]]; then
+    echo "==> building vendored TubeReplacer"
+    generated="$TUBEREPLACER_DIR/common/SABR/proto/generated"
+    rm -rf "$generated"
+    mkdir -p "$generated"
+    make -C "$TUBEREPLACER_DIR" clean >/dev/null 2>&1 || true
+    rm -rf "$TUBEREPLACER_DIR/packages"
+    make -C "$TUBEREPLACER_DIR" package FINALPACKAGE=1 ARCHS=armv7
+    shopt -s nullglob
+    debs=("$TUBEREPLACER_DIR"/packages/*.deb)
+    shopt -u nullglob
+    if [[ ${#debs[@]} -eq 0 ]]; then
+        echo "error: TubeReplacer produced no .deb" >&2
+        exit 1
+    fi
+    cp "${debs[@]}" "$DEB_OUT/"
+fi
 
 echo "==> building all-in-one metapackage"
 stage="$(mktemp -d)"

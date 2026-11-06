@@ -12,10 +12,10 @@ different reasons, and only the first one is fully fixable by a client tweak:
 
 | App | Status with this repo | Main blockers | Notes |
 | --- | --- | --- | --- |
-| **YouTube** (App Store) | Engine only | Old API endpoints shut down; TLS changes | The real fix is a request-rewriting tweak. See below. |
-| **YouTube Kids** | Engine only | Same family of API/version problems | Start by dumping classes for “update”/“support”. |
-| **Facebook** | Engine only | Login/2FA flow, unsupported-client wall | Community login workaround exists; see below. |
-| **Messenger** | Engine only | Server enforces a minimum client version | Hardest of the four; may not be fixable client-side. |
+| **YouTube** (App Store) | **Working** | Old API endpoints shut down; TLS changes | Fixed by the vendored TubeReplacer backend (see below). |
+| **YouTube Kids** | Web fallback + engine | Same family of API/version problems | No public native backend replacement exists; fallback documented below. |
+| **Facebook** | **Working on iOS 6–8** (v11) | Login/2FA flow, unsupported-client wall, broken system integration | Info.plist spoof + system integration fix (see below). |
+| **Messenger** | Version-spoofed; server still strict | Server enforces a minimum client version / E2E encryption | Works for some versions/accounts; not guaranteed. |
 | **App Store** | Not included | Expired/broken trust, UI layout | `iTunesStoreX` (GPL-3) is the known fix. |
 | **Instagram / Twitter / Reddit / Spotify** | Not included | API changes, minimum version | Good candidates for new packages. |
 | **WhatsApp / Snapchat** | Not included | Aggressive server-side version enforcement | Do not expect these to work. |
@@ -25,20 +25,17 @@ OS + User-Agent, but it does **not** restore the service by itself.
 
 ## YouTube
 
-The pre-Google YouTube app and old App Store YouTube builds use long-dead
-endpoints. Two open-source approaches exist:
+`com.legacyfixes.youtube` **works** because it depends on
+**TubeReplacer** (`dev.preloading.tubereplacer` 2.0.2), which replaces the
+dead backend locally instead of relying on a proxy server. The source is
+vendored under `vendor/TubeReplacer` (GPL-3.0) and built by this repo's
+toolchain, so users only need one Cydia source. It supports the App Store
+YouTube app versions 1.0.0–2.0.0 on iOS 5–10 (armv7 here), including sign-in.
 
-- **TubeReplacer** — a backendless fix for iOS 5–10 (GPL-3.0).
-  <https://github.com/Preloading/TubeReplacer>
-- **TubeRepair** — a tweak + self-hosted/community server that redirects the old
-  app to an Invidious-style backend. The client source currently has no license,
-  so link users to it instead of bundling it.
-  <https://github.com/ObscureMosquito/TubeRepair-Client>
-
-If you want YouTube to actually play video, porting one of those into this repo
-(or depending on the upstream package) is the realistic path. The engine here
-is the right place for the surrounding glue: suppress the forced-update alert,
-spoof the reported OS/UA, and log the old app's requests.
+The shared engine still handles the surrounding glue (forced-update alerts,
+OS/User-Agent spoofing, logging). The alternative **TubeRepair** approach uses
+a self-hosted/community server; its client source currently has no license, so
+it is linked rather than bundled: <https://github.com/ObscureMosquito/TubeRepair-Client>.
 
 ## Facebook / Messenger
 

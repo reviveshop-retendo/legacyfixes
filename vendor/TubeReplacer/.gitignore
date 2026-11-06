@@ -1,0 +1,9 @@
+.theos/
+packages/
+.DS_Store
+compile_commands.json
+.cache
+googleapp/signinpolyfil.h
+.clangd
+common/SABR/proto/generated
+.vscode
