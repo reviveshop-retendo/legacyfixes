@@ -30,6 +30,16 @@
     <key>BypassCertPinning</key>
     <false/>
 
+    <!-- YouTube Kids web fallback. The native client's backend no longer
+         exists, so the app is handed over to youtubekids.com in an in-app
+         browser. Set to false to keep the original (broken) native UI. -->
+    <key>WebFallback</key>
+    <true/>
+    <key>WebFallbackURL</key>
+    <string>https://www.youtubekids.com/</string>
+    <key>WebFallbackDelay</key>
+    <real>2.0</real>
+
     <!-- Diagnostics: dump class names / methods to the log at launch. -->
     <key>DumpClasses</key>
     <false/>

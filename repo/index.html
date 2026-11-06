@@ -170,7 +170,7 @@
     <article class="card">
       <div class="card-head">
         <div><h3>LegacyFixes All-in-One</h3><p class="id">com.legacyfixes.allinone</p></div>
-        <span class="ver">1.0.0</span>
+        <span class="ver">1.2.0</span>
       </div>
       <p>Metapackage that installs every app fix below in one tap. Remove it later if you only want some of them.</p>
     </article>
@@ -199,40 +199,58 @@
     <article class="card">
       <div class="card-head">
         <div><h3>LegacyFix: YouTube Kids</h3><p class="id">com.legacyfixes.youtubekids</p></div>
-        <span class="ver">1.0.0</span>
+        <span class="ver">1.1.0</span>
       </div>
-      <p>The same compatibility layer for YouTube Kids (bundle <code>com.google.ios.youtubekids</code>).</p>
+      <p>Google never shipped a backend replacement for the old YouTube Kids
+      client, so this package hands the app over to the YouTube Kids web client
+      in an in-app browser.</p>
       <ul>
-        <li>Update-nag suppression</li>
-        <li>Optional OS / User-Agent spoofing</li>
-        <li>Runtime diagnostics to find gating methods</li>
+        <li>Keeps the app icon and gives access to the kid-safe catalogue</li>
+        <li>Configurable URL and delay; set <code>WebFallback=false</code> to keep the native UI</li>
+        <li>Update-nag suppression and the shared engine included</li>
       </ul>
+      <details>
+        <summary>Configuration</summary>
+        <p>Defaults: <code>/Library/Application Support/LegacyFixes/Patches/com.google.ios.youtubekids.plist</code><br>
+        Per-device overrides: <code>/var/mobile/Library/Preferences/com.legacyfixes.com.google.ios.youtubekids.plist</code></p>
+        <p class="muted">iOS 6/7 may need a TLS 1.2 backport for the web fallback to load.</p>
+      </details>
     </article>
 
     <article class="card">
       <div class="card-head">
         <div><h3>LegacyFix: Facebook</h3><p class="id">com.legacyfixes.facebook</p></div>
-        <span class="ver">1.0.0</span>
+        <span class="ver">1.1.0</span>
       </div>
-      <p>Compatibility layer for the classic Facebook app on 32-bit iOS.</p>
+      <p><strong>Fix for Facebook 11.x on iOS 6–8.</strong> Repairs the system
+      Facebook-account integration and makes the app report a supported version.</p>
       <ul>
-        <li>Hides forced-update and unsupported-client alerts</li>
-        <li>Optional version / User-Agent spoofing</li>
-        <li>Hook table for login and API fixes you add yourself</li>
+        <li>Rewrites the three broken system-integration calls (<code>privacy_options</code>, <code>me/links</code>, <code>auth.login</code>)</li>
+        <li>Spoofs <code>FBAppVersion</code> / <code>FBPlatformVersion</code> in-process — no app-bundle edits</li>
+        <li>Hides forced-update alerts</li>
       </ul>
+      <details>
+        <summary>Notes</summary>
+        <p>Use Facebook <strong>11.0</strong> (the last iOS 6 build) and enable 2FA on your account before logging in.
+        If login stops at “Confirm Identity”, approve it from a newer device; see the
+        <a href="https://developer.bag-xml.com/guides/facebook/">bag-xml guide</a>.</p>
+        <p class="muted">Logs: <code>/var/mobile/Library/Logs/LegacyFixes/</code></p>
+      </details>
     </article>
 
     <article class="card">
       <div class="card-head">
         <div><h3>LegacyFix: Messenger</h3><p class="id">com.legacyfixes.messenger</p></div>
-        <span class="ver">1.0.0</span>
+        <span class="ver">1.1.0</span>
       </div>
-      <p>Compatibility layer for Facebook Messenger on legacy iOS.</p>
+      <p>Makes old Messenger builds report a currently accepted client version,
+      which gets past the “wrong credentials”/forced-update wall.</p>
       <ul>
+        <li>Spoofs <code>FBAppVersion</code> 447.0.0.43.106 / <code>FBPlatformVersion</code> 447.0.0</li>
         <li>Update-nag suppression</li>
-        <li>Optional OS / User-Agent spoofing</li>
-        <li>Same extensible patch engine as the other packages</li>
+        <li>Per-device overrides if a different build needs other numbers</li>
       </ul>
+      <p class="muted">Messenger is server-strict and end-to-end encryption changes may still block some accounts; this removes the client-side gate.</p>
     </article>
 
   </div>

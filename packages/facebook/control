@@ -1,8 +1,8 @@
 Package: com.legacyfixes.facebook
 Name: LegacyFix: Facebook
-Version: 1.0.0
+Version: 1.1.0
 Architecture: iphoneos-arm
-Description: Compatibility helpers for Facebook on iOS 6-9 (32-bit). Suppresses update nags, can spoof the reported iOS version and User-Agent, and ships a config-driven hook engine for app-specific fixes.
+Description: Fixes the classic Facebook 11.x app on iOS 6-8. Repairs the broken system Facebook-account integration (privacy_options / me-links / auth.login), spoofs FBAppVersion and FBPlatformVersion in-process (no app-bundle edits), suppresses forced-update alerts and logs diagnostics.
 Maintainer: LegacyFixes
 Author: LegacyFixes
 Section: Tweaks

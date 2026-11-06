@@ -168,11 +168,15 @@ Useful keys:
 | `SystemVersion` | string | Report this iOS version to the app |
 | `UserAgent` | string | Replace outgoing `User-Agent` |
 | `SuppressAlerts` | array | Hide alerts containing any string |
+| `InfoPlistOverrides` | dict | Values returned by `NSBundle` for the app's `Info.plist` (e.g. `FBAppVersion`) |
 | `BypassCertPinning` | bool | Accept any TLS trust result (**debug only**) |
 | `DumpClasses` | bool | Log every class name at launch |
 | `DumpClassesFilter` | string | Only dump classes containing this text |
 | `DumpMethodsForClasses` | array | Log instance/class methods for these classes |
 | `Patches` | array | Config-driven zero-argument method patches |
+| `WebFallback` | bool | YouTube Kids only: use the in-app web client |
+| `WebFallbackURL` | string | YouTube Kids only: page to load |
+| `WebFallbackDelay` | number | YouTube Kids only: seconds to wait after launch |
 
 Example patch rule (disable a boolean gate without writing code):
 
@@ -206,7 +210,12 @@ These projects solve specific apps and are worth studying or depending on.
 Check each license before redistributing binaries:
 
 - **TubeReplacer** — YouTube fix for iOS 5–10, no backend required. GPL-3.0.
+  **Vendored under `vendor/TubeReplacer` and shipped by this repo.**
   <https://github.com/Preloading/TubeReplacer>
+- **FBIntegrationFix** — repairs iOS 6–8's system Facebook account integration.
+  No license file, so the technique was independently reimplemented here; see
+  `packages/facebook/FBSystemFix.xm`.
+  <https://github.com/Epixx512/FBIntegrationFix>
 - **TubeRepair** — classic YouTube + App Store YouTube client/server fix.
   Client source currently has no license, so link to it rather than vendoring.
   <https://github.com/ObscureMosquito/TubeRepair-Client>

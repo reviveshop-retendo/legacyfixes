@@ -6,7 +6,7 @@ INSTALL_TARGET_PROCESSES = YouTubeKids
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = YouTubeKidsFix
-YouTubeKidsFix_FILES = Tweak.xm $(THEOS_PROJECT_DIR)/../../shared/LFEngine.m
+YouTubeKidsFix_FILES = Tweak.xm WebFallback.m $(THEOS_PROJECT_DIR)/../../shared/LFEngine.m
 YouTubeKidsFix_CFLAGS = -fobjc-arc -I$(THEOS_PROJECT_DIR)/../../shared
 YouTubeKidsFix_FRAMEWORKS = UIKit Security
 YouTubeKidsFix_LIBRARIES = substrate

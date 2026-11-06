@@ -11,6 +11,26 @@
     <key>SystemVersion</key>
     <string></string>
 
+    <!-- App version spoofing. The Facebook 11.x client still talks to modern
+         servers, but refuses to continue unless it believes it is a newer
+         build. These values are the 2026 community fix for iOS 6-8:
+
+           CFBundleShortVersionString  544.0.0
+           FBAppVersion                544.0.0.57.70
+           FBPlatformVersion           544.0.0
+
+         No files in the signed .app bundle are modified; LegacyFixes hooks
+         NSBundle's Info.plist accessors inside the process. -->
+    <key>InfoPlistOverrides</key>
+    <dict>
+        <key>CFBundleShortVersionString</key>
+        <string>544.0.0</string>
+        <key>FBAppVersion</key>
+        <string>544.0.0.57.70</string>
+        <key>FBPlatformVersion</key>
+        <string>544.0.0</string>
+    </dict>
+
     <!-- Replace the outgoing User-Agent header for THIS app.
          Leave empty to disable. -->
     <key>UserAgent</key>

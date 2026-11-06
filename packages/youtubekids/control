@@ -1,9 +1,9 @@
 Package: com.legacyfixes.youtubekids
 Name: LegacyFix: YouTube Kids
-Version: 1.0.0
+Version: 1.1.0
 Architecture: iphoneos-arm
-Description: Compatibility helpers for YouTube Kids on iOS 6-9 (32-bit). Suppresses update nags, can spoof the reported iOS version and User-Agent, and ships a config-driven hook engine for app-specific fixes.
+Description: Keeps YouTube Kids usable now that its native backend is gone by handing the app over to youtubekids.com in an in-app browser (configurable URL/delay), with update-nag suppression and the shared LegacyFixes engine.
 Maintainer: LegacyFixes
 Author: LegacyFixes
 Section: Tweaks
-Depends: mobilesubstrate, firmware (>= 6.0), firmware (<< 10.0)
+Depends: mobilesubstrate, firmware (>= 7.0), firmware (<< 10.0)

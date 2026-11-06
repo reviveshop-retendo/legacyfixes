@@ -11,6 +11,18 @@
     <key>SystemVersion</key>
     <string></string>
 
+    <!-- App version spoofing for Messenger. Unlike Facebook, Messenger only
+         checks FBAppVersion / FBPlatformVersion, not the bundle version. These
+         are the values from the public "Bypass Messenger" fix; override them
+         per device if a different app build works better with other numbers. -->
+    <key>InfoPlistOverrides</key>
+    <dict>
+        <key>FBAppVersion</key>
+        <string>447.0.0.43.106</string>
+        <key>FBPlatformVersion</key>
+        <string>447.0.0</string>
+    </dict>
+
     <!-- Replace the outgoing User-Agent header for THIS app.
          Leave empty to disable. -->
     <key>UserAgent</key>

@@ -27,6 +27,8 @@ static NSString *gSpoofedSystemVersion = nil;
 static NSString *gUserAgent = nil;
 static NSArray *gAlertPatterns = nil;
 static BOOL gBypassPinning = NO;
+static NSDictionary *gInfoOverrides = nil;
+static NSDictionary *gMergedInfoDictionary = nil;
 
 #pragma mark - Logging
 
@@ -308,6 +310,70 @@ static void LFInstallCertificatePinningBypass(void) {
     LFLog(@"certificate pinning bypass enabled");
 }
 
+#pragma mark - Info.plist overrides
+
+//
+// Some legacy apps gate features on their own Info.plist version fields
+// (Facebook's FBAppVersion/FBPlatformVersion, Messenger, etc.). Editing the
+// signed app bundle is fragile and breaks code-signing checks, so override the
+// values in-process instead. This is how the public Facebook v11 fix is applied
+// without touching the .app.
+//
+// Config:
+//   <key>InfoPlistOverrides</key>
+//   <dict>
+//       <key>FBAppVersion</key><string>544.0.0.57.70</string>
+//   </dict>
+//
+
+static id (*LFOriginalInfoPlistObject)(id, SEL, NSString *);
+static NSDictionary *(*LFOriginalInfoDictionary)(id, SEL);
+
+static BOOL LFIsMainBundle(id bundle) {
+    return bundle != nil && bundle == [NSBundle mainBundle];
+}
+
+static id LFInfoPlistObject(id self, SEL _cmd, NSString *key) {
+    if (LFIsMainBundle(self) && [key isKindOfClass:[NSString class]]) {
+        id override = gInfoOverrides[key];
+        if (override) {
+            return override;
+        }
+    }
+    return LFOriginalInfoPlistObject ? LFOriginalInfoPlistObject(self, _cmd, key) : nil;
+}
+
+static NSDictionary *LFInfoDictionary(id self, SEL _cmd) {
+    NSDictionary *info = LFOriginalInfoDictionary
+                             ? LFOriginalInfoDictionary(self, _cmd)
+                             : nil;
+
+    if (!LFIsMainBundle(self)) {
+        return info;
+    }
+
+    if (!gMergedInfoDictionary) {
+        NSMutableDictionary *merged = info ? [info mutableCopy]
+                                           : [NSMutableDictionary dictionary];
+        [merged addEntriesFromDictionary:gInfoOverrides];
+        gMergedInfoDictionary = [merged copy];
+    }
+    return gMergedInfoDictionary;
+}
+
+static void LFInstallInfoPlistOverrides(void) {
+    MSHookMessageEx([NSBundle class],
+                    @selector(objectForInfoDictionaryKey:),
+                    (IMP)LFInfoPlistObject,
+                    (IMP *)&LFOriginalInfoPlistObject);
+    MSHookMessageEx([NSBundle class],
+                    @selector(infoDictionary),
+                    (IMP)LFInfoDictionary,
+                    (IMP *)&LFOriginalInfoDictionary);
+    LFLog(@"overriding Info.plist keys: %@",
+          [[gInfoOverrides allKeys] componentsJoinedByString:@", "]);
+}
+
 #pragma mark - Config-driven method patches
 
 static void LFDumpClassList(NSString *filter) {
@@ -514,6 +580,12 @@ static void LFApplyConfiguration(void) {
     if ([spoofedVersion isKindOfClass:[NSString class]] && spoofedVersion.length > 0) {
         gSpoofedSystemVersion = [spoofedVersion copy];
         LFInstallSystemVersionSpoof();
+    }
+
+    NSDictionary *infoOverrides = gConfig[@"InfoPlistOverrides"];
+    if ([infoOverrides isKindOfClass:[NSDictionary class]] && infoOverrides.count > 0) {
+        gInfoOverrides = [infoOverrides copy];
+        LFInstallInfoPlistOverrides();
     }
 
     NSString *userAgent = gConfig[@"UserAgent"];

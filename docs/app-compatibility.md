@@ -37,17 +37,52 @@ OS/User-Agent spoofing, logging). The alternative **TubeRepair** approach uses
 a self-hosted/community server; its client source currently has no license, so
 it is linked rather than bundled: <https://github.com/ObscureMosquito/TubeRepair-Client>.
 
+## YouTube Kids
+
+There is no public backend replacement for the old YouTube Kids client (unlike
+TubeReplacer for YouTube), and its native protocol is gone. The package
+therefore uses a **web fallback**: a couple of seconds after launch it presents
+`https://www.youtubekids.com/` in an in-app browser, so the kid-safe catalogue
+is still reachable from the same icon. Tune it with `WebFallback`,
+`WebFallbackURL` and `WebFallbackDelay`, or set `WebFallback=false` to keep the
+native UI.
+
+The fallback depends on WebKit being able to load Google's modern site. That
+works on iOS 8/9; on iOS 6/7 install a TLS 1.2 backport (e.g. TLSFix) first.
+
 ## Facebook / Messenger
 
-Facebook's old clients hit a mix of login-flow changes and “unsupported client”
-walls. The community guide at <https://developer.bag-xml.com/guides/facebook/>
-covers the current login workaround (confirming identity from a newer device).
-Messenger is stricter: it tends to enforce a minimum version server-side, which
-a tweak cannot negotiate around.
+Facebook 11.x is the last build that runs on iOS 6. Two things broke:
 
-`FBIntegrationFix` (system Facebook account integration on iOS 6–8) is useful
-context, but it has no license, so do not copy it into this repo:
-<https://github.com/Epix512/FBIntegrationFix>
+1. **The system Facebook-account integration** (the account stored in
+   Settings) makes three requests that modern servers reject:
+   `graph.facebook.com//me/privacy_options`, `graph.facebook.com/me/links`
+   and `api.facebook.com/method/auth.login` with an old app token. This causes
+   crashes/hangs and failed logins. The package's `FacebookSystemFix` component
+   registers an `NSURLProtocol` in `accountsd`, `sociald`, `SocialUIService`
+   and `SpringBoard` and rewrites exactly those requests.
+2. **The client version wall.** The app reports itself as an old Facebook build
+   and refuses to continue. `LegacyFixes` overrides `CFBundleShortVersionString`,
+   `FBAppVersion` and `FBPlatformVersion` *inside the process* (no edits to the
+   signed `.app`). Defaults come from the 2026 community fix: 544.0.0 /
+   544.0.0.57.70.
+
+Login flow: enable 2FA on the account, sign in with email + password, and
+approve the “Confirm Identity” prompt from a newer device if it appears. The
+[bag-xml Facebook guide](https://developer.bag-xml.com/guides/facebook/) has
+step-by-step screenshots.
+
+Messenger only checks `FBAppVersion` / `FBPlatformVersion`, so the package
+spoofs those to 447.0.0.43.106 / 447.0.0. That gets past the client-side
+“wrong credentials” wall. Messenger also enforces server-side rules (and has
+moved to end-to-end encryption), so an account may still be refused; there is
+no client-side fix for that.
+
+The request/token rewrite is the same technique as the community
+`FBIntegrationFix` project, reimplemented here because that project has no
+license. The tokens involved are public client tokens embedded in old
+Facebook/iOS builds, not user credentials.
+
 
 ## Trust and TLS on old iOS
 
