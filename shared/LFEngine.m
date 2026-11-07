@@ -331,6 +331,7 @@ static NSDictionary *(*LFOriginalInfoDictionary)(id, SEL);
 static CFDictionaryRef (*LFOriginalCFBundleGetInfoDictionary)(CFBundleRef);
 static CFTypeRef (*LFOriginalCFBundleGetValueForInfoDictionaryKey)(CFBundleRef, CFStringRef);
 static CFMutableDictionaryRef gMergedCFInfoDictionary = NULL;
+static NSLock *gInfoLock = nil;
 
 static BOOL LFIsMainBundle(id bundle) {
     return bundle != nil && bundle == [NSBundle mainBundle];
@@ -366,8 +367,12 @@ static CFDictionaryRef LFCFBundleGetInfoDictionary(CFBundleRef bundle) {
     if (!LFIsMainCFBundle(bundle)) {
         return info;
     }
+
+    [gInfoLock lock];
     LFBuildMergedCFInfoDictionary(info);
-    return gMergedCFInfoDictionary;
+    CFDictionaryRef merged = gMergedCFInfoDictionary;
+    [gInfoLock unlock];
+    return merged;
 }
 
 static CFTypeRef LFCFBundleGetValueForInfoDictionaryKey(CFBundleRef bundle, CFStringRef key) {
@@ -402,16 +407,23 @@ static NSDictionary *LFInfoDictionary(id self, SEL _cmd) {
         return info;
     }
 
+    [gInfoLock lock];
     if (!gMergedInfoDictionary) {
         NSMutableDictionary *merged = info ? [info mutableCopy]
                                            : [NSMutableDictionary dictionary];
         [merged addEntriesFromDictionary:gInfoOverrides];
         gMergedInfoDictionary = [merged copy];
     }
-    return gMergedInfoDictionary;
+    NSDictionary *result = gMergedInfoDictionary;
+    [gInfoLock unlock];
+    return result;
 }
 
 static void LFInstallInfoPlistOverrides(void) {
+    if (!gInfoLock) {
+        gInfoLock = [[NSLock alloc] init];
+    }
+
     MSHookMessageEx([NSBundle class],
                     @selector(objectForInfoDictionaryKey:),
                     (IMP)LFInfoPlistObject,

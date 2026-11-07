@@ -42,11 +42,17 @@ static NSString *const kLFCurrentSystemToken =
 
     NSString *host = request.URL.host;
     NSString *path = request.URL.path;
+    BOOL isGET = [[request.HTTPMethod ?: @"GET" uppercaseString] isEqualToString:@"GET"];
 
     if ([host isEqualToString:@"graph.facebook.com"]) {
-        return [path isEqualToString:@"//me/privacy_options"] ||
-               [path isEqualToString:@"/me/privacy_options"] ||
-               [path isEqualToString:@"/me/links"];
+        if ([path isEqualToString:@"//me/privacy_options"] ||
+            [path isEqualToString:@"/me/privacy_options"] ||
+            [path isEqualToString:@"/me/links"]) {
+            // Only rewrite reads; POSTing to me/links would otherwise be
+            // turned into a completely different feed write.
+            return isGET;
+        }
+        return NO;
     }
     if ([host isEqualToString:@"api.facebook.com"]) {
         return [path isEqualToString:@"/method/auth.login"];
