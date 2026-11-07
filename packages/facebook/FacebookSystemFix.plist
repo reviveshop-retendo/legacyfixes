@@ -1,6 +1,9 @@
 {
     Filter = {
-        Bundles = ( "com.apple.springboard" );
+        Bundles = (
+            "com.apple.springboard",
+            "com.facebook.Facebook"
+        );
         Executables = (
             "accountsd",
             "sociald",

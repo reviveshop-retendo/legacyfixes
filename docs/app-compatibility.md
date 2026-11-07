@@ -58,7 +58,8 @@ Facebook 11.x is the last build that runs on iOS 6. Two things broke:
    and `api.facebook.com/method/auth.login` with an old app token. This causes
    crashes/hangs and failed logins. The package's `FacebookSystemFix` component
    registers an `NSURLProtocol` in `accountsd`, `sociald`, `SocialUIService`,
-   `Preferences` and `SpringBoard` and rewrites exactly those requests.
+   `Preferences`, `SpringBoard` and the Facebook app itself, and rewrites
+   exactly those requests.
 2. **The client version wall.** The app reports itself as an old Facebook build
    and refuses to continue. `LegacyFixes` overrides `CFBundleShortVersionString`,
    `FBAppVersion` and `FBPlatformVersion` *inside the process* (no edits to the
