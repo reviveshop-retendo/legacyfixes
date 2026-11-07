@@ -15,7 +15,7 @@ if [[ -z "${THEOS:-}" ]]; then
     exit 1
 fi
 
-APP_PACKAGES=(youtube youtubekids facebook messenger)
+APP_PACKAGES=(youtube youtubekids facebook messenger textnow)
 DEB_OUT="$ROOT/build/debs"
 
 rm -rf "$ROOT/build"

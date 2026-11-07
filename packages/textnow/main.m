@@ -1,0 +1,13 @@
+//
+//  main.m
+//  TextNow Legacy
+//
+
+#import <UIKit/UIKit.h>
+#import "TNAppDelegate.h"
+
+int main(int argc, char *argv[]) {
+    @autoreleasepool {
+        return UIApplicationMain(argc, argv, nil, NSStringFromClass([TNAppDelegate class]));
+    }
+}

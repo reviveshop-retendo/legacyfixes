@@ -1,0 +1,9 @@
+Package: com.legacyfixes.textnow
+Name: TextNow Legacy
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: An unofficial TextNow client for legacy 32-bit iOS. Sign in with your own TextNow account, browse conversations, and send or receive SMS over TextNow's web API. Built for iOS 7 on the iPhone 4 (armv7).
+Maintainer: LegacyFixes
+Author: LegacyFixes
+Section: Applications
+Depends: firmware (>= 7.0), firmware (<< 10.0)

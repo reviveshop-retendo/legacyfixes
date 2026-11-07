@@ -16,6 +16,7 @@ different reasons, and only the first one is fully fixable by a client tweak:
 | **YouTube Kids** | Web fallback + engine | Same family of API/version problems | No public native backend replacement exists; fallback documented below. |
 | **Facebook** | **Working on iOS 6–8** (v11) | Login/2FA flow, unsupported-client wall, broken system integration | Info.plist spoof + system integration fix (see below). |
 | **Messenger** | Version-spoofed; server still strict | Server enforces a minimum client version / E2E encryption | Works for some versions/accounts; not guaranteed. |
+| **TextNow** | **Unofficial standalone client** (iOS 7+) | Official app requires iOS 15; web client needs modern JS | `com.legacyfixes.textnow` reimplements a small native client on TextNow's web API. |
 | **App Store** | Not included | Expired/broken trust, UI layout | `iTunesStoreX` (GPL-3) is the known fix. |
 | **Instagram / Twitter / Reddit / Spotify** | Not included | API changes, minimum version | Good candidates for new packages. |
 | **WhatsApp / Snapchat** | Not included | Aggressive server-side version enforcement | Do not expect these to work. |
@@ -79,6 +80,32 @@ The request/token rewrite is the same technique as the community
 `FBIntegrationFix` project, reimplemented here because that project has no
 license. The tokens involved are public client tokens embedded in old
 Facebook/iOS builds, not user credentials.
+
+## TextNow (standalone client)
+
+TextNow's current App Store build requires iOS 15, and its web client ships ES
+modules that iOS 7's WebKit cannot parse, so a webview wrapper is not viable.
+`packages/textnow` is instead a small native Objective-C app that speaks to
+TextNow's web API:
+
+- `POST /api/sessions` with the `X-XSRF-TOKEN` header and the cookies from the
+  login page; the session cookies are persisted in the Keychain.
+- Conversations come from `/api/v3/contacts?page_size=100` and
+  `/api/users/{username}/messages`; older history is paged with
+  `contact_value`.
+- Sending is `POST /api/users/{username}/messages`; read state is updated with
+  `POST /api/users/{username}/conversations/{number}?...&http_method=PATCH`.
+- Updates are polled (6 s for the conversation list, 4 s in a thread). No
+  WebSocket dependency.
+
+The app is **unofficial** and not part of the All-in-One package because it
+requires iOS 7.0 (the fixes still target iOS 6). Accounts that normally sign in
+with Google/Apple must set a TextNow password before this client can log in.
+Passwords are only written to the Keychain when the user enables **Remember
+password**; sessions otherwise require a fresh login. TextNow can change or
+block the web API at any time, and the client has only been exercised against
+the login endpoint — a real account is still needed to validate
+send/receive/history on a device.
 
 
 ## Trust and TLS on old iOS

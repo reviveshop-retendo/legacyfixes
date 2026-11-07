@@ -2,12 +2,15 @@
 
 A Cydia / Sileo / Zebra repository that bundles compatibility fixes for apps
 that still run on **legacy 32-bit iOS (6 through 9)** — YouTube, YouTube Kids,
-Facebook and Messenger today, with room for more.
+Facebook and Messenger today — plus **TextNow Legacy**, a standalone SMS client
+for iOS 7+.
 
 It is a working monorepo, not just a list of packages:
 
 - **Per-app packages** (`com.legacyfixes.youtube`, `…youtubekids`,
   `…facebook`, `…messenger`) plus an **All-in-One metapackage**.
+- **TextNow Legacy** (`com.legacyfixes.textnow`), an unofficial native client
+  for TextNow's web API, installed separately from the fixes (iOS 7+).
 - A **shared runtime engine** compiled into each tweak: update-nag
   suppression, iOS-version and User-Agent spoofing, an optional certificate
   pinning bypass, a config-driven hook table, and a class/method dumper.
@@ -31,10 +34,12 @@ It is a working monorepo, not just a list of packages:
 | `com.legacyfixes.youtubekids` | `com.google.ios.youtubekids` | Same engine, for YouTube Kids |
 | `com.legacyfixes.facebook` | `com.facebook.Facebook` | Info.plist version spoofing + system Facebook-integration fix + engine |
 | `com.legacyfixes.messenger` | `com.facebook.Messenger` | Info.plist version spoofing + engine |
+| `com.legacyfixes.textnow` | `com.legacyfixes.textnow` (standalone app) | **Unofficial TextNow client** for iOS 7+: sign in, conversations, SMS over TextNow's web API |
 | `dev.preloading.tubereplacer` | `com.google.ios.youtube*` | Vendored TubeReplacer 2.0.2 (GPL-3.0); pulled in automatically by the YouTube package |
 
 Target: `iphoneos-arm` (armv7), minimum iOS 6.0, maximum iOS 9.x. It will not
-run on arm64 devices.
+run on arm64 devices. TextNow Legacy requires iOS 7.0 and is therefore not part
+of the All-in-One package (which still supports iOS 6).
 
 **Live source:** <https://reviveshop-retendo.github.io/legacyfixes>
 
@@ -73,6 +78,34 @@ Install a single package over SSH without a repo at all:
 scp build/debs/com.legacyfixes.youtube_*.deb root@<device-ip>:/tmp/
 ssh root@<device-ip> 'dpkg -i /tmp/com.legacyfixes.youtube_*.deb && killall -9 YouTube'
 ```
+
+## TextNow Legacy
+
+TextNow's current App Store client requires iOS 15 and its web client needs ES
+modules, so neither runs on iOS 7. `packages/textnow` is instead a small native
+Objective-C app that talks to TextNow's web API directly:
+
+- Login with your own TextNow credentials (session cookies are persisted in the
+  iOS Keychain; the password is only stored if you enable **Remember
+  password**).
+- Conversation list with unread badges, polling, compose, chat history and
+  sending SMS.
+- Foreground polling only — no WebSocket or background-mode dependency, so it
+  works on old WebKit/Foundation versions.
+
+Build it like any other package:
+
+```bash
+docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
+  -v "$PWD:/work" -w /work legacyfixes-build \
+  make -C packages/textnow clean package FINALPACKAGE=1
+```
+
+The deb installs `/Applications/TextNowLegacy.app` and refreshes the icon cache
+in `postinst`. It is an **unofficial client**: TextNow can change or block its
+web API at any time, and accounts using Google/Apple sign-in must set a
+password before signing in here. No TextNow account is bundled or required by
+the build.
 
 ## Publish with GitHub Pages
 
@@ -132,6 +165,12 @@ packages/<app>/            # one Theos project per app fix
   control                  # Debian package metadata
   <Tweak>.plist            # MobileSubstrate bundle filter
   layout/…/Patches/<bundle-id>.plist   # default config
+packages/textnow/          # standalone TextNow Legacy app (not a tweak)
+  Makefile
+  TN*.{h,m}                # Objective-C sources
+  Resources/Info.plist
+  generate-icons.py        # regenerates icons/launch images
+  layout/DEBIAN/postinst   # uicache refresh
 packages/allinone/control  # metapackage template
 repo/                      # published site (index.html + generated metadata)
 scripts/build.sh           # build all debs + repo
@@ -230,6 +269,8 @@ Check each license before redistributing binaries:
 ## Legal / ethical notes
 
 - Only install on devices you own.
+- TextNow Legacy is an unofficial client for your own TextNow account. It is
+  not affiliated with or endorsed by TextNow.
 - Do not use this project to bypass DRM, paid features, or account bans.
 - Respect the licenses of any code you copy into this repo. The MIT license
   here covers only the original code in this repository.
