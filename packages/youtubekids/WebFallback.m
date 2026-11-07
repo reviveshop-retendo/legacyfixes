@@ -18,8 +18,21 @@ static NSString *LFStringConfig(NSString *key, NSString *fallback) {
 }
 
 static UIViewController *LFTopViewController(void) {
-    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    UIApplication *application = [UIApplication sharedApplication];
+    UIWindow *window = application.keyWindow;
+    if (!window) {
+        for (UIWindow *candidate in application.windows) {
+            if (candidate.isKeyWindow || candidate.rootViewController) {
+                window = candidate;
+                break;
+            }
+        }
+    }
+
     UIViewController *controller = window.rootViewController;
+    if (!controller) {
+        return nil;
+    }
 
     while (controller.presentedViewController) {
         controller = controller.presentedViewController;
@@ -126,6 +139,7 @@ static void LFPresentYouTubeKidsFallback(void) {
 
     LFYouTubeKidsWebController *web = [[LFYouTubeKidsWebController alloc] init];
     web.homeURL = LFStringConfig(@"WebFallbackURL", @"https://www.youtubekids.com/");
+    NSLog(@"[LegacyFixes/YouTubeKids] presenting web fallback: %@", web.homeURL);
 
     UINavigationController *navigation =
         [[UINavigationController alloc] initWithRootViewController:web];

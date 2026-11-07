@@ -721,6 +721,15 @@ static void LFStartLocked(NSString *bundleID) {
     LFLog(@"log file: %@", gLogPath);
 
     LFApplyConfiguration();
+
+    if (gInfoOverrides.count > 0) {
+        for (NSString *key in gInfoOverrides) {
+            LFLog(@"effective Info.plist[%@] = %@",
+                  key,
+                  [[NSBundle mainBundle] objectForInfoDictionaryKey:key] ?: @"(nil)");
+        }
+    }
+
     LFLog(@"=== ready ===");
 }
 
