@@ -91,8 +91,8 @@ TextNow's web API:
 - `POST /api/sessions` with the `X-XSRF-TOKEN` header and the cookies from the
   login page; the session cookies are persisted in the Keychain.
 - Conversations come from `/api/v3/contacts?page_size=100` and
-  `/api/users/{username}/messages`; older history is paged with
-  `contact_value`.
+  `/api/users/{username}/messages`; older history is scoped with
+  `contact_value` and paged with `start_message_id`.
 - Sending is `POST /api/users/{username}/messages`; read state is updated with
   `POST /api/users/{username}/conversations/{number}?...&http_method=PATCH`.
 - Updates are polled (6 s for the conversation list, 4 s in a thread). No

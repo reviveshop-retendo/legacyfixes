@@ -91,7 +91,7 @@ Objective-C app that talks to TextNow's web API directly:
 - Conversation list with unread badges, polling, compose, chat history and
   sending SMS.
 - Foreground polling only — no WebSocket or background-mode dependency, so it
-  works on old WebKit/Foundation versions.
+  stays compatible with iOS 7's networking stack.
 
 Build it like any other package:
 
