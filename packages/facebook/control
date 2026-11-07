@@ -1,6 +1,6 @@
 Package: com.legacyfixes.facebook
 Name: LegacyFix: Facebook
-Version: 1.1.0
+Version: 1.2.0
 Architecture: iphoneos-arm
 Description: Fixes the classic Facebook 11.x app on iOS 6-8. Repairs the broken system Facebook-account integration (privacy_options / me-links / auth.login), spoofs FBAppVersion and FBPlatformVersion in-process (no app-bundle edits), suppresses forced-update alerts and logs diagnostics.
 Maintainer: LegacyFixes

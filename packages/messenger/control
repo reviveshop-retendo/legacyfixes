@@ -1,6 +1,6 @@
 Package: com.legacyfixes.messenger
 Name: LegacyFix: Messenger
-Version: 1.1.0
+Version: 1.2.0
 Architecture: iphoneos-arm
 Description: Makes old Facebook Messenger builds report a supported client version (FBAppVersion 447.0.0.43.106 / FBPlatformVersion 447.0.0) without editing the app bundle, suppresses forced-update alerts and provides the shared LegacyFixes engine.
 Maintainer: LegacyFixes

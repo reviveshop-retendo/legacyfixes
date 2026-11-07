@@ -1,6 +1,6 @@
 Package: com.legacyfixes.youtubekids
 Name: LegacyFix: YouTube Kids
-Version: 1.1.0
+Version: 1.2.0
 Architecture: iphoneos-arm
 Description: Keeps YouTube Kids usable now that its native backend is gone by handing the app over to youtubekids.com in an in-app browser (configurable URL/delay), with update-nag suppression and the shared LegacyFixes engine.
 Maintainer: LegacyFixes
