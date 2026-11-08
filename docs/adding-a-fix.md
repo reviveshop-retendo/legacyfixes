@@ -154,7 +154,31 @@ Restart the app. If the rule's class/method does not exist, the engine logs a
 
 ---
 
-## 3b. Fix it with code
+## 3b. Spoof the version the app reports (no code)
+
+Many legacy clients gate themselves on their own Info.plist version fields
+(Facebook's `FBAppVersion`, Messenger's `FBAppVersion` / `FBPlatformVersion`).
+Editing the signed `.app` is fragile and breaks code signing, so the engine
+overrides the values in-process instead, through both `NSBundle` and
+CoreFoundation:
+
+```xml
+<key>InfoPlistOverrides</key>
+<dict>
+    <key>CFBundleShortVersionString</key> <string>544.0.0</string>
+    <key>FBAppVersion</key>               <string>544.0.0.57.70</string>
+    <key>FBPlatformVersion</key>          <string>544.0.0</string>
+</dict>
+```
+
+Only the main app bundle is affected. The launch log prints the effective
+values (`effective Info.plist[...] = ...`) so you can confirm the override
+before blaming the server. This is how the Facebook and Messenger packages
+work; use the values that are known to work for the specific app build.
+
+---
+
+## 3c. Fix it with code
 
 Open `packages/<app>/Tweak.xm` and add Logos hooks below the constructor:
 

@@ -207,7 +207,7 @@ Useful keys:
 | `SystemVersion` | string | Report this iOS version to the app |
 | `UserAgent` | string | Replace outgoing `User-Agent` |
 | `SuppressAlerts` | array | Hide alerts containing any string |
-| `InfoPlistOverrides` | dict | Values returned by `NSBundle` for the app's `Info.plist` (e.g. `FBAppVersion`) |
+| `InfoPlistOverrides` | dict | Values returned for the app's `Info.plist` via `NSBundle` and CoreFoundation (e.g. `FBAppVersion`) |
 | `BypassCertPinning` | bool | Accept any TLS trust result (**debug only**) |
 | `DumpClasses` | bool | Log every class name at launch |
 | `DumpClassesFilter` | string | Only dump classes containing this text |
